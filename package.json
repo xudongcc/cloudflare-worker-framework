@@ -23,8 +23,11 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -d",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
