@@ -1,0 +1,136 @@
+{
+  "name": "cloudflare-worker-framework",
+  "version": "0.0.0-development",
+  "description": "Cloudflare Worker Framework",
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "framework",
+    "express",
+    "router"
+  ],
+  "author": {
+    "name": "Xudong Huang",
+    "email": "me@xudong.dev",
+    "url": "https://www.xudong.dev/"
+  },
+  "bugs": "https://github.com/xudongdev/cloudflare-worker-framework/issues",
+  "homepage": "https://github.com/xudongdev/cloudflare-worker-framework#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xudongdev/cloudflare-worker-framework.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "semantic-release": "semantic-release"
+  },
+  "dependencies": {
+    "find-my-way": "^4.0.0",
+    "qs": "^6.10.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^2.2.1",
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.36",
+    "@types/qs": "^6.9.6",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "commitizen": "^4.2.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^7.22.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.3.2",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "husky": "^5.2.0",
+    "jest": "^26.6.3",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.2.1",
+    "semantic-release": "^17.4.2",
+    "ts-jest": "^26.5.4",
+    "typescript": "^4.2.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true"
+    }
+  },
+  "lint-staged": {
+    "*.{json,js,md}": [
+      "prettier --write"
+    ],
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+      "airbnb-base",
+      "plugin:import/typescript",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended",
+      "prettier/@typescript-eslint",
+      "plugin:jest/recommended"
+    ],
+    "plugins": [
+      "@typescript-eslint",
+      "jest",
+      "simple-import-sort"
+    ],
+    "rules": {
+      "simple-import-sort/sort": "error",
+      "import/prefer-default-export": "off",
+      "import/no-extraneous-dependencies": "off",
+      "import/extensions": [
+        "error",
+        "always",
+        {
+          "js": "never",
+          "ts": "never"
+        }
+      ]
+    }
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/github",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": true
+        }
+      ]
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
