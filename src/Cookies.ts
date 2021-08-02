@@ -1,5 +1,5 @@
 export class Cookies {
-  private _cookies: Record<string, string> = {};
+  private _cookies?: Record<string, string>;
 
   constructor(private readonly request: Request) {}
 
