@@ -1,8 +1,10 @@
 import qs, { ParsedQs } from "qs";
+import { Cookies } from "./Cookies";
 
 export class Context {
   private _url?: URL;
   private _query?: ParsedQs;
+  private _cookies?: Cookies;
 
   constructor(
     readonly request: Request,
@@ -47,5 +49,13 @@ export class Context {
     }
 
     return this._query;
+  }
+
+  get cookies() {
+    if (!this._cookies) {
+      this._cookies = new Cookies(this.request);
+    }
+
+    return this._cookies;
   }
 }
