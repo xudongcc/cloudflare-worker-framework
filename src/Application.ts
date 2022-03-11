@@ -1,69 +1,92 @@
-import FindMyWay, { Instance, HTTPMethod } from "find-my-way";
+import Router from "trek-router";
 import { Context } from "./Context";
-import { Handler } from "./interfaces/Handler";
+import { Middleware } from "./interfaces/Middleware";
+import { compose } from "./utils/compose";
 
 export class Application {
-  private router: Instance<any>;
+  private middlewares: Middleware[] = [];
+  private router = new Router();
 
-  constructor() {
-    this.router = FindMyWay({
-      ignoreTrailingSlash: true,
-    });
-  }
+  constructor() {}
 
-  get(path: string, handler: Handler) {
-    this.router.on("GET", path, handler as any);
-    return this;
-  }
-
-  post(path: string, handler: Handler) {
-    this.router.on("POST", path, handler as any);
-    return this;
-  }
-
-  put(path: string, handler: Handler) {
-    this.router.on("PUT", path, handler as any);
-    return this;
-  }
-
-  patch(path: string, handler: Handler) {
-    this.router.on("PATCH", path, handler as any);
-    return this;
-  }
-
-  delete(path: string, handler: Handler) {
-    this.router.on("DELETE", path, handler as any);
-    return this;
-  }
-
-  async respond(event: FetchEvent): Promise<Response> {
-    const url = new URL(event.request.url);
-
-    const { handler, params } =
-      ((this.router.find(
-        event.request.method as HTTPMethod,
-        url.pathname
-      ) as unknown) as {
-        handler: Handler;
-        params: Record<string, any>;
-      }) || {};
-
-    if (handler) {
-      const ctx = new Context(event.request, params);
-
-      const result = await handler(ctx);
-
-      return typeof result === "string"
-        ? new Response(result, { status: 200 })
-        : result;
+  use(middleware: Middleware) {
+    if (typeof middleware !== "function") {
+      throw new TypeError("middleware must be a function!");
     }
 
-    return new Response("404", { status: 404 });
+    this.middlewares.push(middleware);
+    return this;
+  }
+
+  get(path: string, ...middlewares: Middleware[]) {
+    this.router.add("GET", path, compose(middlewares));
+  }
+
+  post(path: string, ...middlewares: Middleware[]) {
+    this.router.add("POST", path, compose(middlewares));
+  }
+
+  put(path: string, ...middlewares: Middleware[]) {
+    this.router.add("PUT", path, compose(middlewares));
+  }
+
+  patch(path: string, ...middlewares: Middleware[]) {
+    this.router.add("PATCH", path, compose(middlewares));
+  }
+
+  delete(path: string, ...middlewares: Middleware[]) {
+    this.router.add("DELETE", path, compose(middlewares));
   }
 
   listen() {
-    addEventListener("fetch", (event) => {
-      event.respondWith(this.respond(event));
+    const middleware = compose([
+      ...this.middlewares,
+      async (ctx, next) => {
+        const [handler, params] = this.router.find(
+          ctx.request.method,
+          ctx.request.path
+        );
+
+        if (handler) {
+          ctx.params = params;
+          await handler(ctx, next);
+        } else {
+          await next();
+        }
+      },
+    ]);
+
+    const next = async () => {};
+
+    addEventListener("fetch", (event: FetchEvent) => {
+      const ctx = new Context(event);
+
+      event.respondWith(
+        middleware(ctx, next).then(() => {
+          if (ctx.response.res) {
+            return ctx.response.res;
+          }
+
+          if (ctx.response.body === null) {
+            return new Response("", {
+              status: ctx.response.status,
+              headers: ctx.response.headers,
+            });
+          }
+
+          if (typeof ctx.response.body === "string") {
+            return new Response(ctx.response.body, {
+              status: ctx.response.status,
+              headers: ctx.response.headers,
+            });
+          }
+
+          return new Response(JSON.stringify(ctx.response.body), {
+            status: ctx.response.status,
+            headers: ctx.response.headers,
+          });
+        })
+      );
     });
   }
 }

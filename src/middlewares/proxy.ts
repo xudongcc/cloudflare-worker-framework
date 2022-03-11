@@ -1,28 +1,28 @@
-import { Handler } from "../interfaces/Handler";
+import { Middleware } from "../interfaces/Middleware";
 
 interface ProxyOptions {
   target: string;
 }
 
-export function proxy(options: ProxyOptions): Handler {
+export function proxy(options: ProxyOptions): Middleware {
   return async (ctx) => {
-    const requestUrl = new URL(ctx.request.url);
+    const requestUrl = new URL(ctx.req.url);
     const targetUrl = new URL(options.target);
 
     targetUrl.pathname = requestUrl.pathname;
     targetUrl.search = requestUrl.search;
 
-    const proxyRequestHeaders = new Headers(ctx.request.headers);
+    const proxyRequestHeaders = new Headers(ctx.req.headers);
 
     proxyRequestHeaders.set(
       "x-forwarded-for",
-      ctx.request.headers.get("cf-connecting-ip") as string
+      ctx.req.headers.get("cf-connecting-ip") as string
     );
 
-    return fetch(targetUrl.toString(), {
-      method: ctx.request.method,
+    ctx.response.res = await fetch(targetUrl.toString(), {
+      method: ctx.req.method,
       headers: proxyRequestHeaders,
-      body: ctx.request.body,
+      body: ctx.req.body,
     });
   };
 }

@@ -1,0 +1,12 @@
+
+
+name = "cloudflare-worker-framework"
+type = "javascript"
+account_id = "f6d158d572a5cf0db790e50992133751"
+workers_dev = true
+
+[build]
+command = "npm install && npm run build:test"
+
+[build.upload]
+format = "service-worker"
